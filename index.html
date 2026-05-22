@@ -1,0 +1,1381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deutsch Meister</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:#0a1628;
+  --bg2:#0f1f3d;
+  --surface:#162040;
+  --surface2:#1d2d52;
+  --border:rgba(255,255,255,0.08);
+  --text:#f0f4ff;
+  --muted:#7a8cb8;
+  --accent:#4f9eff;
+  --accent2:#ff6b6b;
+  --green:#58cc02;
+  --green2:#46a302;
+  --gold:#ffc800;
+  --gold2:#e6a800;
+  --purple:#9b59b6;
+  --teal:#1cb0f6;
+  --pink:#ff4b91;
+  --red:#ff4b4b;
+  --orange:#ff9600;
+  --r:16px;
+  --r-sm:10px;
+  --r-pill:100px;
+}
+
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+/* ============================================================
+   SCREENS
+   ============================================================ */
+.screen{display:none;min-height:100vh;flex-direction:column}
+.screen.active{display:flex}
+
+/* ============================================================
+   SIDEBAR / TOP NAV
+   ============================================================ */
+#app-shell{display:flex;min-height:100vh}
+
+#sidebar{
+  width:88px;min-width:88px;background:var(--surface);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;align-items:center;
+  padding:1.5rem 0;gap:8px;
+  position:sticky;top:0;height:100vh;
+  z-index:50;
+}
+
+.nav-logo{font-size:1.6rem;font-weight:900;color:var(--green);letter-spacing:-1px;margin-bottom:1rem;text-align:center;line-height:1}
+.nav-logo span{display:block;font-size:0.55rem;font-weight:700;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-top:2px}
+
+.nav-btn{
+  width:56px;height:56px;border-radius:var(--r-sm);background:none;
+  border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:3px;transition:all 0.15s;color:var(--muted);
+}
+.nav-btn:hover,.nav-btn.active{background:var(--surface2);color:var(--text)}
+.nav-btn.active{border:2px solid var(--accent)}
+.nav-icon{font-size:1.4rem;line-height:1}
+.nav-label{font-size:0.55rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em}
+
+#main-content{flex:1;overflow-y:auto;overflow-x:hidden}
+
+/* ============================================================
+   TOP BAR (inside content)
+   ============================================================ */
+.top-bar{
+  position:sticky;top:0;z-index:40;
+  background:var(--bg);border-bottom:1px solid var(--border);
+  padding:0.75rem 1.5rem;
+  display:flex;align-items:center;gap:1.5rem;
+  flex-wrap:wrap;
+}
+
+.xp-chip{display:flex;align-items:center;gap:6px;font-weight:800;font-size:0.9rem;color:var(--gold)}
+.streak-chip{display:flex;align-items:center;gap:5px;font-weight:800;font-size:0.9rem;color:var(--orange)}
+.gems-chip{display:flex;align-items:center;gap:5px;font-weight:800;font-size:0.9rem;color:var(--teal)}
+.chip-icon{font-size:1.1rem}
+
+.xp-bar-wrap{flex:1;min-width:120px;height:8px;background:var(--surface2);border-radius:var(--r-pill);overflow:hidden}
+.xp-bar-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--orange));border-radius:var(--r-pill);transition:width 0.6s ease}
+.level-badge{font-size:0.7rem;font-weight:800;color:var(--gold);white-space:nowrap}
+
+/* ============================================================
+   PATH SCREEN
+   ============================================================ */
+#path-screen{padding:0}
+
+.path-section-header{
+  text-align:center;
+  padding:2rem 1rem 1rem;
+  position:relative;
+}
+.section-banner{
+  display:inline-flex;align-items:center;gap:10px;
+  background:var(--surface);border:2px solid var(--border);
+  border-radius:var(--r-pill);padding:0.6rem 1.4rem;
+  font-weight:800;font-size:0.95rem;
+  margin-bottom:0.5rem;
+}
+.section-desc{color:var(--muted);font-size:0.85rem;font-weight:600}
+
+/* The winding path */
+.path-container{
+  max-width:420px;margin:0 auto;
+  padding:1rem 1rem 4rem;
+  display:flex;flex-direction:column;align-items:center;
+  gap:0;
+}
+
+.path-row{
+  display:flex;
+  width:100%;
+  justify-content:center;
+  position:relative;
+  margin-bottom:-8px;
+}
+/* Alternate left/center/right zigzag */
+.path-row.pos-left{justify-content:flex-start;padding-left:40px}
+.path-row.pos-center{justify-content:center}
+.path-row.pos-right{justify-content:flex-end;padding-right:40px}
+
+/* Connector lines between nodes */
+.path-connector{
+  position:absolute;
+  width:4px;background:var(--surface2);
+  border-radius:var(--r-pill);
+  left:50%;transform:translateX(-50%);
+  bottom:-20px;height:24px;
+  z-index:0;
+}
+.path-connector.done{background:var(--green2)}
+
+/* Node */
+.node-wrap{position:relative;z-index:1}
+
+.lesson-node{
+  width:72px;height:72px;border-radius:50%;
+  border:none;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  transition:all 0.2s;position:relative;
+  font-family:'Nunito',sans-serif;
+  outline:none;
+  box-shadow:0 4px 0 rgba(0,0,0,0.4);
+}
+.lesson-node:hover:not(.locked){transform:translateY(-3px);box-shadow:0 7px 0 rgba(0,0,0,0.4)}
+.lesson-node:active:not(.locked){transform:translateY(2px);box-shadow:0 2px 0 rgba(0,0,0,0.4)}
+
+.lesson-node.done{background:var(--green);border:3px solid var(--green2)}
+.lesson-node.active{background:var(--green);border:4px solid #fff;animation:nodePulse 2s ease infinite}
+.lesson-node.locked{background:var(--surface2);border:3px solid var(--surface);cursor:default;box-shadow:none}
+.lesson-node.checkpoint{width:80px;height:80px}
+.lesson-node.checkpoint.done{background:var(--gold);border-color:var(--gold2)}
+.lesson-node.checkpoint.active{background:var(--gold);border:4px solid #fff}
+
+@keyframes nodePulse{
+  0%,100%{box-shadow:0 4px 0 rgba(0,0,0,0.4),0 0 0 0 rgba(79,158,255,0.4)}
+  50%{box-shadow:0 4px 0 rgba(0,0,0,0.4),0 0 0 12px rgba(79,158,255,0)}
+}
+
+.node-icon{font-size:1.6rem;line-height:1}
+.node-stars{display:flex;gap:2px;margin-top:2px}
+.node-star{font-size:0.55rem;opacity:0.5}
+.node-star.lit{opacity:1}
+
+.node-label{
+  position:absolute;top:calc(100% + 8px);left:50%;transform:translateX(-50%);
+  font-size:0.7rem;font-weight:800;color:var(--muted);white-space:nowrap;
+  text-align:center;
+}
+
+/* Chest / bonus node */
+.lesson-node.bonus{background:linear-gradient(135deg,#b44aff,#7c2fc7);border-color:#9b3de0}
+
+/* Crown on checkpoint */
+.node-crown{position:absolute;top:-16px;font-size:1.1rem}
+
+/* START button below active node */
+.start-bubble{
+  position:absolute;bottom:-52px;left:50%;transform:translateX(-50%);
+  background:var(--green);color:#fff;
+  font-weight:900;font-size:0.8rem;letter-spacing:0.04em;
+  padding:8px 20px;border-radius:var(--r-pill);
+  border:none;cursor:pointer;
+  box-shadow:0 4px 0 var(--green2);
+  transition:all 0.15s;white-space:nowrap;
+  font-family:'Nunito',sans-serif;
+  z-index:10;
+}
+.start-bubble:hover{transform:translateX(-50%) translateY(-2px);box-shadow:0 6px 0 var(--green2)}
+.start-bubble::before{
+  content:'';position:absolute;top:-6px;left:50%;transform:translateX(-50%);
+  border-left:8px solid transparent;border-right:8px solid transparent;
+  border-bottom:8px solid var(--green);
+}
+
+/* locked tooltip */
+.lock-tip{
+  position:absolute;bottom:-44px;left:50%;transform:translateX(-50%);
+  background:var(--surface);color:var(--muted);
+  font-weight:700;font-size:0.7rem;
+  padding:5px 12px;border-radius:var(--r-pill);border:1px solid var(--border);
+  white-space:nowrap;display:none;z-index:10;
+}
+.lesson-node.locked:hover + .lock-tip,.lesson-node.locked:focus + .lock-tip{display:block}
+
+/* Section divider */
+.section-divider{
+  width:100%;max-width:420px;
+  display:flex;align-items:center;justify-content:center;
+  padding:1.5rem 0 1rem;
+  position:relative;
+}
+.divider-banner{
+  background:var(--surface);border:2px solid var(--surface2);
+  border-radius:var(--r);padding:0.8rem 1.5rem;
+  display:flex;align-items:center;gap:10px;
+  font-weight:800;font-size:0.9rem;
+  z-index:1;
+}
+.divider-line{position:absolute;left:0;right:0;height:2px;background:var(--surface2)}
+
+/* ============================================================
+   LESSON MODAL (picker + game launcher)
+   ============================================================ */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;
+  display:flex;align-items:flex-end;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity 0.25s;
+}
+.modal-overlay.open{opacity:1;pointer-events:all}
+
+.modal-sheet{
+  background:var(--surface);border-radius:28px 28px 0 0;
+  width:100%;max-width:480px;padding:1.5rem 1.5rem 2rem;
+  transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);
+  border-top:1px solid var(--border);
+}
+.modal-overlay.open .modal-sheet{transform:translateY(0)}
+
+.modal-handle{width:40px;height:4px;background:var(--surface2);border-radius:2px;margin:0 auto 1.2rem}
+.modal-title{font-size:1.2rem;font-weight:900;margin-bottom:0.25rem}
+.modal-sub{font-size:0.85rem;color:var(--muted);font-weight:600;margin-bottom:1.2rem}
+
+.stars-row{display:flex;gap:6px;margin-bottom:1.2rem}
+.star-big{font-size:1.5rem;filter:grayscale(1) brightness(0.6)}
+.star-big.lit{filter:none}
+
+.mode-pick{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1.2rem}
+.mode-tile{
+  padding:1rem;background:var(--surface2);border:2px solid var(--border);
+  border-radius:var(--r);cursor:pointer;transition:all 0.15s;text-align:center;
+}
+.mode-tile:hover,.mode-tile.sel{border-color:var(--accent);background:rgba(79,158,255,0.1)}
+.mode-tile-icon{font-size:1.5rem;margin-bottom:5px}
+.mode-tile-name{font-size:0.8rem;font-weight:800}
+.mode-tile-desc{font-size:0.7rem;color:var(--muted);font-weight:600;margin-top:2px}
+
+.go-btn{
+  width:100%;padding:1rem;background:var(--green);
+  border:none;border-radius:var(--r);color:#fff;
+  font-family:'Nunito',sans-serif;font-size:1.05rem;font-weight:900;
+  cursor:pointer;box-shadow:0 4px 0 var(--green2);transition:all 0.15s;
+  letter-spacing:0.02em;
+}
+.go-btn:hover{transform:translateY(-2px);box-shadow:0 6px 0 var(--green2)}
+.go-btn:active{transform:translateY(2px);box-shadow:0 2px 0 var(--green2)}
+.go-btn:disabled{background:var(--surface2);box-shadow:none;color:var(--muted);cursor:not-allowed;transform:none}
+
+/* ============================================================
+   GAME SCREEN
+   ============================================================ */
+#game-screen{background:var(--bg)}
+
+.game-top{
+  display:flex;align-items:center;gap:1rem;
+  padding:1rem 1.5rem;
+  background:var(--bg);border-bottom:1px solid var(--border);
+  position:sticky;top:0;z-index:40;
+}
+.game-close{
+  background:none;border:1.5px solid var(--border);border-radius:8px;
+  color:var(--muted);font-size:1.2rem;width:36px;height:36px;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;transition:all 0.15s;
+}
+.game-close:hover{border-color:var(--muted);color:var(--text)}
+
+.game-prog-wrap{flex:1;height:10px;background:var(--surface2);border-radius:var(--r-pill);overflow:hidden}
+.game-prog-fill{height:100%;background:linear-gradient(90deg,var(--green),#8de82a);border-radius:var(--r-pill);transition:width 0.4s ease}
+
+.game-xp-badge{font-size:0.8rem;font-weight:800;color:var(--gold);white-space:nowrap;display:flex;align-items:center;gap:4px}
+
+.game-body{
+  max-width:540px;margin:0 auto;
+  padding:1.5rem 1.5rem 6rem;
+  display:flex;flex-direction:column;gap:1.5rem;
+}
+
+/* Question card */
+.q-label{font-size:0.7rem;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted)}
+.q-word-box{
+  background:var(--surface);border:2px solid var(--surface2);
+  border-radius:var(--r);padding:1.5rem;
+  display:flex;flex-direction:column;align-items:center;gap:0.5rem;
+}
+.q-article{font-size:0.95rem;font-weight:800;margin-bottom:-4px}
+.art-der{color:#5cb8fc} .art-die{color:#fc5cf0} .art-das{color:#3dd68c}
+.q-word{font-size:2.4rem;font-weight:900;line-height:1.1;text-align:center}
+.q-sub{font-size:0.8rem;color:var(--muted);font-weight:600}
+
+/* Answer options grid */
+.options-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.opt-btn{
+  padding:1rem 0.75rem;background:var(--surface);
+  border:2px solid var(--surface2);border-radius:var(--r);
+  color:var(--text);font-family:'Nunito',sans-serif;
+  font-size:0.9rem;font-weight:700;cursor:pointer;
+  transition:all 0.15s;text-align:center;line-height:1.3;
+  min-height:60px;display:flex;align-items:center;justify-content:center;
+}
+.opt-btn:hover:not(:disabled){border-color:var(--accent);background:rgba(79,158,255,0.08)}
+.opt-btn.correct{border-color:var(--green);background:rgba(88,204,2,0.12);color:var(--green)}
+.opt-btn.wrong{border-color:var(--red);background:rgba(255,75,75,0.1);color:var(--red)}
+.opt-btn:disabled{cursor:default}
+
+/* Feedback bar */
+.feedback-bar{
+  position:fixed;bottom:0;left:0;right:0;z-index:100;
+  padding:1.25rem 1.5rem;
+  display:flex;align-items:center;justify-content:space-between;
+  gap:1rem;
+  transform:translateY(100%);transition:transform 0.3s ease;
+}
+.feedback-bar.show{transform:translateY(0)}
+.feedback-bar.ok{background:#2d5a1b;border-top:2px solid var(--green)}
+.feedback-bar.bad{background:#5a1b1b;border-top:2px solid var(--red)}
+.fb-left{display:flex;flex-direction:column;gap:3px}
+.fb-result{font-size:1rem;font-weight:900}
+.fb-answer{font-size:0.82rem;color:rgba(255,255,255,0.7);font-weight:600}
+.fb-next{
+  padding:0.75rem 1.5rem;border-radius:var(--r);border:none;
+  font-family:'Nunito',sans-serif;font-size:0.95rem;font-weight:900;
+  cursor:pointer;white-space:nowrap;flex-shrink:0;
+}
+.fb-next.ok-btn{background:var(--green);color:#fff;box-shadow:0 3px 0 var(--green2)}
+.fb-next.bad-btn{background:var(--red);color:#fff;box-shadow:0 3px 0 #c03030}
+
+/* Match madness */
+.match-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.5rem}
+.match-timer{font-size:1.2rem;font-weight:900;color:var(--accent)}
+.match-timer.urgent{color:var(--red);animation:blink 0.5s ease infinite alternate}
+@keyframes blink{from{opacity:1}to{opacity:.4}}
+.match-streak{font-size:0.85rem;font-weight:800;color:var(--gold)}
+.match-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.match-tile{
+  padding:0.8rem 0.75rem;background:var(--surface);
+  border:2px solid var(--surface2);border-radius:var(--r-sm);
+  cursor:pointer;transition:all 0.18s;font-size:0.88rem;
+  font-weight:700;text-align:center;min-height:54px;
+  display:flex;align-items:center;justify-content:center;
+  line-height:1.3;
+}
+.match-tile:hover:not(.matched):not(.m-selected):not(.m-wrong){border-color:var(--accent);background:rgba(79,158,255,0.08)}
+.match-tile.m-selected{border-color:var(--pink);background:rgba(255,75,145,0.12);color:var(--pink)}
+.match-tile.matched{border-color:rgba(88,204,2,0.4);background:rgba(88,204,2,0.06);color:var(--green);opacity:.55;cursor:default}
+.match-tile.m-wrong{border-color:var(--red);background:rgba(255,75,75,0.12);animation:shake .35s ease}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.tile-art{font-size:.7rem;font-weight:900;display:block;margin-bottom:2px}
+
+/* XP Burst */
+.xp-burst{
+  position:fixed;z-index:300;
+  font-size:1.1rem;font-weight:900;color:var(--gold);
+  pointer-events:none;
+  animation:burst 1s ease forwards;
+}
+@keyframes burst{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-60px) scale(1.4)}}
+
+/* ============================================================
+   RESULTS SCREEN
+   ============================================================ */
+#result-screen{
+  align-items:center;justify-content:center;
+  padding:2rem;background:var(--bg);
+}
+.result-inner{max-width:460px;width:100%;text-align:center}
+.result-mascot{font-size:5rem;margin-bottom:1rem;display:block;animation:bounce 0.6s ease}
+@keyframes bounce{0%{transform:scale(0)}60%{transform:scale(1.15)}100%{transform:scale(1)}}
+.result-title{font-size:2rem;font-weight:900;margin-bottom:0.4rem}
+.result-sub{color:var(--muted);font-weight:600;margin-bottom:2rem}
+
+.result-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:2rem}
+.rs-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1rem 0.5rem}
+.rs-num{font-size:1.6rem;font-weight:900;display:block}
+.rs-lbl{font-size:0.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+
+.stars-earned{display:flex;justify-content:center;gap:12px;margin-bottom:2rem}
+.big-star{font-size:2.5rem;filter:grayscale(1) brightness(.5);transition:all .3s}
+.big-star.earned{filter:none;animation:starPop .4s ease}
+@keyframes starPop{0%{transform:scale(0)}70%{transform:scale(1.3)}100%{transform:scale(1)}}
+
+.result-btns{display:flex;flex-direction:column;gap:10px}
+.btn-continue{
+  width:100%;padding:1rem;background:var(--green);
+  border:none;border-radius:var(--r);color:#fff;
+  font-family:'Nunito',sans-serif;font-size:1.05rem;font-weight:900;
+  cursor:pointer;box-shadow:0 4px 0 var(--green2);transition:all .15s;
+}
+.btn-continue:hover{transform:translateY(-2px);box-shadow:0 6px 0 var(--green2)}
+.btn-retry{
+  width:100%;padding:.9rem;background:var(--surface);border:2px solid var(--border);
+  border-radius:var(--r);color:var(--text);
+  font-family:'Nunito',sans-serif;font-size:.95rem;font-weight:800;cursor:pointer;transition:all .15s;
+}
+.btn-retry:hover{border-color:var(--muted)}
+
+/* ============================================================
+   PROFILE SCREEN
+   ============================================================ */
+#profile-screen{padding:2rem 1.5rem}
+.profile-header{display:flex;align-items:center;gap:1.2rem;margin-bottom:2rem}
+.avatar{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--purple));display:flex;align-items:center;justify-content:center;font-size:2rem;flex-shrink:0;border:3px solid var(--gold)}
+.profile-name{font-size:1.4rem;font-weight:900}
+.profile-since{font-size:.8rem;color:var(--muted);font-weight:600}
+
+.stats-section-title{font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:.8rem}
+.big-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:2rem}
+.bs-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1.2rem}
+.bs-icon{font-size:1.5rem;margin-bottom:.4rem;display:block}
+.bs-num{font-size:1.8rem;font-weight:900;display:block}
+.bs-lbl{font-size:.75rem;color:var(--muted);font-weight:700}
+
+.achievements{display:flex;flex-direction:column;gap:8px;margin-bottom:2rem}
+.ach-row{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:.9rem 1rem}
+.ach-icon{font-size:1.4rem;flex-shrink:0}
+.ach-info{flex:1}
+.ach-name{font-size:.88rem;font-weight:800}
+.ach-desc{font-size:.75rem;color:var(--muted);font-weight:600}
+.ach-badge{font-size:.7rem;font-weight:800;padding:3px 10px;border-radius:var(--r-pill)}
+.ach-done{background:rgba(88,204,2,.15);color:var(--green)}
+.ach-todo{background:var(--surface2);color:var(--muted)}
+
+/* ============================================================
+   LEADERBOARD SCREEN
+   ============================================================ */
+#leaderboard-screen{padding:1.5rem}
+.lb-title{font-size:1.3rem;font-weight:900;margin-bottom:.3rem}
+.lb-sub{font-size:.85rem;color:var(--muted);font-weight:600;margin-bottom:1.5rem}
+.lb-row{display:flex;align-items:center;gap:12px;padding:.9rem 1rem;border-radius:var(--r-sm);margin-bottom:6px;background:var(--surface);border:1px solid var(--border)}
+.lb-row.you{border-color:var(--accent);background:rgba(79,158,255,.08)}
+.lb-rank{width:28px;font-size:.9rem;font-weight:900;text-align:center;flex-shrink:0}
+.lb-rank.gold{color:var(--gold)}
+.lb-rank.silver{color:#c0c0c0}
+.lb-rank.bronze{color:#cd7f32}
+.lb-avatar{width:36px;height:36px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
+.lb-name{flex:1;font-weight:700;font-size:.9rem}
+.lb-xp{font-weight:900;font-size:.9rem;color:var(--gold)}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media(max-width:600px){
+  #sidebar{width:56px;min-width:56px}
+  .nav-label{display:none}
+  .nav-btn{width:40px;height:48px}
+  .path-container{padding:.5rem .5rem 4rem}
+  .path-row.pos-left{padding-left:16px}
+  .path-row.pos-right{padding-right:16px}
+}
+
+/* ============================================================
+   MISC
+   ============================================================ */
+.fade-in{animation:fadeIn .25s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+
+<!-- APP SHELL (sidebar + content) -->
+<div id="app-shell">
+
+  <!-- SIDEBAR -->
+  <nav id="sidebar">
+    <div class="nav-logo">DM<span>Deutsch</span></div>
+    <button class="nav-btn active" id="nav-path" onclick="showTab('path')">
+      <span class="nav-icon">🗺️</span>
+      <span class="nav-label">Path</span>
+    </button>
+    <button class="nav-btn" id="nav-lb" onclick="showTab('lb')">
+      <span class="nav-icon">🏆</span>
+      <span class="nav-label">League</span>
+    </button>
+    <button class="nav-btn" id="nav-profile" onclick="showTab('profile')">
+      <span class="nav-icon">👤</span>
+      <span class="nav-label">Profile</span>
+    </button>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <div id="main-content">
+
+    <!-- TOP BAR -->
+    <div class="top-bar">
+      <div class="streak-chip"><span class="chip-icon">🔥</span><span id="tb-streak">0</span></div>
+      <div class="xp-chip"><span class="chip-icon">⚡</span><span id="tb-xp">0</span> XP</div>
+      <div class="xp-bar-wrap"><div class="xp-bar-fill" id="tb-xpbar" style="width:0%"></div></div>
+      <div class="level-badge" id="tb-level">Lvl 1</div>
+      <div class="gems-chip"><span class="chip-icon">💎</span><span id="tb-gems">0</span></div>
+    </div>
+
+    <!-- ===== PATH SCREEN ===== -->
+    <div id="path-screen" class="fade-in">
+      <div id="path-content"></div>
+    </div>
+
+    <!-- ===== LEADERBOARD ===== -->
+    <div id="leaderboard-screen" class="hidden fade-in">
+      <div class="lb-title">🏆 Weekly League</div>
+      <div class="lb-sub">Top learners this week</div>
+      <div id="lb-list"></div>
+    </div>
+
+    <!-- ===== PROFILE ===== -->
+    <div id="profile-screen" class="hidden fade-in">
+      <div class="profile-header">
+        <div class="avatar">🐻</div>
+        <div>
+          <div class="profile-name">Du</div>
+          <div class="profile-since">Learning since today</div>
+        </div>
+      </div>
+      <div class="stats-section-title">Your Stats</div>
+      <div class="big-stats">
+        <div class="bs-card"><span class="bs-icon">🔥</span><span class="bs-num" id="p-streak">0</span><span class="bs-lbl">Day Streak</span></div>
+        <div class="bs-card"><span class="bs-icon">⚡</span><span class="bs-num" id="p-xp">0</span><span class="bs-lbl">Total XP</span></div>
+        <div class="bs-card"><span class="bs-icon">✅</span><span class="bs-num" id="p-lessons">0</span><span class="bs-lbl">Lessons Done</span></div>
+        <div class="bs-card"><span class="bs-icon">🎯</span><span class="bs-num" id="p-acc">0%</span><span class="bs-lbl">Best Accuracy</span></div>
+      </div>
+      <div class="stats-section-title">Achievements</div>
+      <div class="achievements" id="achievements-list"></div>
+    </div>
+
+  </div><!-- /main-content -->
+</div><!-- /app-shell -->
+
+<!-- ===== LESSON MODAL ===== -->
+<div class="modal-overlay" id="lesson-modal" onclick="closeModal(event)">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modal-title">Lektion</div>
+    <div class="modal-sub" id="modal-sub">Choose your mode</div>
+    <div class="stars-row" id="modal-stars"></div>
+    <div class="mode-pick">
+      <div class="mode-tile sel" id="tile-fc" onclick="pickMode('flashcard')">
+        <div class="mode-tile-icon">🃏</div>
+        <div class="mode-tile-name">Flashcard Frenzy</div>
+        <div class="mode-tile-desc">Tap the right answer</div>
+      </div>
+      <div class="mode-tile" id="tile-match" onclick="pickMode('match')">
+        <div class="mode-tile-icon">⚡</div>
+        <div class="mode-tile-name">Match Madness</div>
+        <div class="mode-tile-desc">Race the clock</div>
+      </div>
+    </div>
+    <button class="go-btn" id="modal-go" onclick="launchLesson()">START LESSON</button>
+  </div>
+</div>
+
+<!-- ===== GAME SCREEN ===== -->
+<div id="game-screen" class="screen">
+  <div class="game-top">
+    <button class="game-close" onclick="quitGame()">✕</button>
+    <div class="game-prog-wrap">
+      <div class="game-prog-fill" id="g-prog" style="width:0%"></div>
+    </div>
+    <div class="game-xp-badge">⚡<span id="g-xp">0</span></div>
+  </div>
+  <div class="game-body" id="game-body"></div>
+  <div class="feedback-bar" id="feedback-bar">
+    <div class="fb-left">
+      <div class="fb-result" id="fb-result"></div>
+      <div class="fb-answer" id="fb-answer"></div>
+    </div>
+    <button class="fb-next" id="fb-next" onclick="nextQuestion()"></button>
+  </div>
+</div>
+
+<!-- ===== RESULTS SCREEN ===== -->
+<div id="result-screen" class="screen">
+  <div class="result-inner">
+    <span class="result-mascot" id="res-mascot">🎉</span>
+    <div class="result-title" id="res-title">Ausgezeichnet!</div>
+    <div class="result-sub" id="res-sub"></div>
+    <div class="stars-earned" id="res-stars">
+      <span class="big-star">⭐</span><span class="big-star">⭐</span><span class="big-star">⭐</span>
+    </div>
+    <div class="result-stats">
+      <div class="rs-card"><span class="rs-num" id="rs-xp" style="color:var(--gold)">0</span><span class="rs-lbl">XP Earned</span></div>
+      <div class="rs-card"><span class="rs-num" id="rs-acc" style="color:var(--green)">0%</span><span class="rs-lbl">Accuracy</span></div>
+      <div class="rs-card"><span class="rs-num" id="rs-streak" style="color:var(--orange)">0</span><span class="rs-lbl">Best Streak</span></div>
+    </div>
+    <div class="result-btns">
+      <button class="btn-continue" onclick="continueFromResult()">CONTINUE</button>
+      <button class="btn-retry" onclick="retryLesson()">Try Again</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===================================================================
+// WORD DATA
+// ===================================================================
+const WORDS = {
+  1:[
+    {de:"der Mann",en:"the man"},{de:"die Frau",en:"the woman"},{de:"das Kind",en:"the child"},
+    {de:"der Hund",en:"the dog"},{de:"die Katze",en:"the cat"},{de:"das Haus",en:"the house"},
+    {de:"die Schule",en:"the school"},{de:"der Lehrer",en:"the teacher"},{de:"das Buch",en:"the book"},
+    {de:"die Tür",en:"the door"},{de:"das Fenster",en:"the window"},{de:"der Tisch",en:"the table"},
+    {de:"der Stuhl",en:"the chair"},{de:"das Bett",en:"the bed"},{de:"die Küche",en:"the kitchen"},
+    {de:"das Bad",en:"the bathroom"},{de:"der Vater",en:"the father"},{de:"die Mutter",en:"the mother"},
+    {de:"der Bruder",en:"the brother"},{de:"die Schwester",en:"the sister"},{de:"das Baby",en:"the baby"},
+    {de:"die Familie",en:"the family"},{de:"der Freund",en:"the friend"},{de:"die Freundin",en:"the girlfriend"},
+    {de:"das Wasser",en:"the water"},{de:"die Milch",en:"the milk"},{de:"das Brot",en:"the bread"},
+    {de:"die Butter",en:"the butter"},{de:"der Käse",en:"the cheese"},{de:"das Ei",en:"the egg"},
+    {de:"der Apfel",en:"the apple"},{de:"die Banane",en:"the banana"},{de:"die Orange",en:"the orange"},
+    {de:"das Fleisch",en:"the meat"},{de:"der Fisch",en:"the fish"},{de:"die Suppe",en:"the soup"},
+    {de:"der Kuchen",en:"the cake"},{de:"der Tee",en:"the tea"},{de:"der Kaffee",en:"the coffee"},
+    {de:"das Glas",en:"the glass"},{de:"die Tasse",en:"the cup"},{de:"der Teller",en:"the plate"},
+    {de:"die Gabel",en:"the fork"},{de:"das Messer",en:"the knife"},{de:"der Löffel",en:"the spoon"},
+    {de:"die Hand",en:"the hand"},{de:"der Fuß",en:"the foot"},{de:"der Kopf",en:"the head"},
+    {de:"das Auge",en:"the eye"},{de:"das Ohr",en:"the ear"},{de:"die Nase",en:"the nose"},
+    {de:"der Mund",en:"the mouth"},{de:"der Zahn",en:"the tooth"},{de:"das Haar",en:"the hair"},
+    {de:"der Arm",en:"the arm"},{de:"das Bein",en:"the leg"},{de:"der Rücken",en:"the back"},
+    {de:"das Herz",en:"the heart"},{de:"der Bauch",en:"the belly"},{de:"die Schulter",en:"the shoulder"},
+    {de:"der Ball",en:"the ball"},{de:"das Spiel",en:"the game"},{de:"das Auto",en:"the car"},
+    {de:"der Bus",en:"the bus"},{de:"die Straße",en:"the street"},{de:"der Park",en:"the park"},
+    {de:"der Baum",en:"the tree"},{de:"die Blume",en:"the flower"},{de:"das Gras",en:"the grass"},
+    {de:"die Sonne",en:"the sun"},{de:"der Mond",en:"the moon"},{de:"der Stern",en:"the star"},
+    {de:"der Regen",en:"the rain"},{de:"der Schnee",en:"the snow"},{de:"der Wind",en:"the wind"},
+    {de:"das Feuer",en:"the fire"},{de:"das Wetter",en:"the weather"},{de:"der Tag",en:"the day"},
+    {de:"die Nacht",en:"the night"},{de:"die Woche",en:"the week"},{de:"das Jahr",en:"the year"},
+    {de:"der Monat",en:"the month"},{de:"die Zeit",en:"the time"},{de:"die Uhr",en:"the clock"},
+    {de:"das Geld",en:"the money"},{de:"die Zahl",en:"the number"},{de:"der Name",en:"the name"},
+    {de:"die Farbe",en:"the color"},{de:"die Musik",en:"the music"},{de:"das Lied",en:"the song"},
+    {de:"das Bild",en:"the picture"},{de:"der Bleistift",en:"the pencil"},{de:"das Heft",en:"the notebook"},
+    {de:"die Tasche",en:"the bag"},{de:"der Rucksack",en:"the backpack"},{de:"der Mantel",en:"the coat"},
+    {de:"die Jacke",en:"the jacket"},{de:"das Hemd",en:"the shirt"},{de:"die Hose",en:"the trousers"},
+    {de:"der Schuh",en:"the shoe"},{de:"die Socke",en:"the sock"}
+  ],
+  2:[
+    {de:"das Krankenhaus",en:"the hospital"},{de:"die Apotheke",en:"the pharmacy"},{de:"der Arzt",en:"the doctor"},
+    {de:"die Krankheit",en:"the illness"},{de:"das Rezept",en:"the prescription"},{de:"der Bahnhof",en:"the train station"},
+    {de:"das Flugzeug",en:"the airplane"},{de:"der Zug",en:"the train"},{de:"das Ticket",en:"the ticket"},
+    {de:"die Reise",en:"the journey"},{de:"der Koffer",en:"the suitcase"},{de:"das Hotel",en:"the hotel"},
+    {de:"die Kirche",en:"the church"},{de:"das Rathaus",en:"the town hall"},{de:"die Bank",en:"the bank"},
+    {de:"der Supermarkt",en:"the supermarket"},{de:"die Post",en:"the post office"},{de:"das Restaurant",en:"the restaurant"},
+    {de:"die Speisekarte",en:"the menu"},{de:"der Kellner",en:"the waiter"},{de:"die Rechnung",en:"the bill"},
+    {de:"das Trinkgeld",en:"the tip"},{de:"der Markt",en:"the market"},{de:"die Bäckerei",en:"the bakery"},
+    {de:"der Metzger",en:"the butcher"},{de:"die Schere",en:"the scissors"},{de:"der Pinsel",en:"the brush"},
+    {de:"das Papier",en:"the paper"},{de:"der Stift",en:"the pen"},{de:"der Brief",en:"the letter"},
+    {de:"die Briefmarke",en:"the stamp"},{de:"das Paket",en:"the package"},{de:"die Nachricht",en:"the message"},
+    {de:"das Telefon",en:"the telephone"},{de:"der Computer",en:"the computer"},{de:"die Tastatur",en:"the keyboard"},
+    {de:"der Bildschirm",en:"the screen"},{de:"die Kamera",en:"the camera"},{de:"das Foto",en:"the photo"},
+    {de:"die Zeitung",en:"the newspaper"},{de:"das Magazin",en:"the magazine"},{de:"die Bibliothek",en:"the library"},
+    {de:"der Roman",en:"the novel"},{de:"das Gedicht",en:"the poem"},{de:"die Geschichte",en:"the story"},
+    {de:"der Film",en:"the movie"},{de:"das Kino",en:"the cinema"},{de:"das Theater",en:"the theater"},
+    {de:"der Künstler",en:"the artist"},{de:"das Gemälde",en:"the painting"},{de:"das Museum",en:"the museum"},
+    {de:"der Berg",en:"the mountain"},{de:"das Tal",en:"the valley"},{de:"der See",en:"the lake"},
+    {de:"der Fluss",en:"the river"},{de:"der Ozean",en:"the ocean"},{de:"die Küste",en:"the coast"},
+    {de:"der Strand",en:"the beach"},{de:"die Insel",en:"the island"},{de:"der Wald",en:"the forest"},
+    {de:"die Wiese",en:"the meadow"},{de:"der Garten",en:"the garden"},{de:"der Weg",en:"the path"},
+    {de:"die Brücke",en:"the bridge"},{de:"der Hafen",en:"the harbor"},{de:"das Dorf",en:"the village"},
+    {de:"die Stadt",en:"the city"},{de:"das Land",en:"the country"},{de:"die Hauptstadt",en:"the capital"},
+    {de:"die Grenze",en:"the border"},{de:"die Sprache",en:"the language"},{de:"das Wörterbuch",en:"the dictionary"},
+    {de:"die Grammatik",en:"the grammar"},{de:"der Kurs",en:"the course"},{de:"die Prüfung",en:"the exam"},
+    {de:"das Zeugnis",en:"the report card"},{de:"die Note",en:"the grade"},{de:"der Fehler",en:"the mistake"},
+    {de:"die Lösung",en:"the solution"},{de:"das Problem",en:"the problem"},{de:"die Frage",en:"the question"},
+    {de:"die Antwort",en:"the answer"},{de:"das Gespräch",en:"the conversation"},{de:"die Meinung",en:"the opinion"},
+    {de:"die Idee",en:"the idea"},{de:"der Plan",en:"the plan"},{de:"das Ziel",en:"the goal"},
+    {de:"der Erfolg",en:"the success"},{de:"die Entscheidung",en:"the decision"},{de:"das Ergebnis",en:"the result"},
+    {de:"die Aufgabe",en:"the task"},{de:"die Lösung",en:"the solution"},{de:"das Werkzeug",en:"the tool"},
+    {de:"der Hammer",en:"the hammer"},{de:"der Nagel",en:"the nail"},{de:"der Schlüssel",en:"the key"},
+    {de:"das Schloss",en:"the lock"},{de:"die Treppe",en:"the stairs"},{de:"der Aufzug",en:"the elevator"},
+    {de:"das Dach",en:"the roof"},{de:"die Wand",en:"the wall"},{de:"der Boden",en:"the floor"}
+  ],
+  3:[
+    {de:"die Gesellschaft",en:"the society"},{de:"die Wirtschaft",en:"the economy"},{de:"die Politik",en:"the politics"},
+    {de:"die Regierung",en:"the government"},{de:"das Gesetz",en:"the law"},{de:"die Demokratie",en:"the democracy"},
+    {de:"die Freiheit",en:"the freedom"},{de:"die Gleichheit",en:"the equality"},{de:"die Gerechtigkeit",en:"the justice"},
+    {de:"die Verantwortung",en:"the responsibility"},{de:"das Recht",en:"the right"},{de:"die Pflicht",en:"the duty"},
+    {de:"die Arbeit",en:"the work"},{de:"der Beruf",en:"the profession"},{de:"das Unternehmen",en:"the company"},
+    {de:"die Konkurrenz",en:"the competition"},{de:"der Gewinn",en:"the profit"},{de:"der Verlust",en:"the loss"},
+    {de:"die Investition",en:"the investment"},{de:"das Kapital",en:"the capital"},{de:"die Steuer",en:"the tax"},
+    {de:"der Vertrag",en:"the contract"},{de:"die Vereinbarung",en:"the agreement"},{de:"das Gehalt",en:"the salary"},
+    {de:"die Versicherung",en:"the insurance"},{de:"die Wissenschaft",en:"the science"},{de:"die Forschung",en:"the research"},
+    {de:"das Experiment",en:"the experiment"},{de:"die Theorie",en:"the theory"},{de:"das Modell",en:"the model"},
+    {de:"die Methode",en:"the method"},{de:"das Labor",en:"the laboratory"},{de:"die Energie",en:"the energy"},
+    {de:"die Kraft",en:"the force"},{de:"die Wärme",en:"the heat"},{de:"das Licht",en:"the light"},
+    {de:"der Druck",en:"the pressure"},{de:"die Geschwindigkeit",en:"the speed"},{de:"die Entfernung",en:"the distance"},
+    {de:"das Gewicht",en:"the weight"},{de:"die Temperatur",en:"the temperature"},{de:"die Chemie",en:"the chemistry"},
+    {de:"die Biologie",en:"the biology"},{de:"die Physik",en:"the physics"},{de:"die Mathematik",en:"the mathematics"},
+    {de:"die Gleichung",en:"the equation"},{de:"der Beweis",en:"the proof"},{de:"die Gesundheit",en:"the health"},
+    {de:"das Symptom",en:"the symptom"},{de:"die Diagnose",en:"the diagnosis"},{de:"die Behandlung",en:"the treatment"},
+    {de:"das Medikament",en:"the medication"},{de:"die Allergie",en:"the allergy"},{de:"der Impfstoff",en:"the vaccine"},
+    {de:"die Kultur",en:"the culture"},{de:"die Tradition",en:"the tradition"},{de:"das Erbe",en:"the heritage"},
+    {de:"die Religion",en:"the religion"},{de:"die Philosophie",en:"the philosophy"},{de:"die Ethik",en:"the ethics"},
+    {de:"die Psychologie",en:"the psychology"},{de:"das Verhalten",en:"the behavior"},{de:"die Persönlichkeit",en:"the personality"},
+    {de:"die Emotion",en:"the emotion"},{de:"das Bewusstsein",en:"the consciousness"},{de:"die Erinnerung",en:"the memory"},
+    {de:"der Traum",en:"the dream"},{de:"die Fantasie",en:"the imagination"},{de:"die Wirklichkeit",en:"the reality"},
+    {de:"das Symbol",en:"the symbol"},{de:"die Bedeutung",en:"the meaning"},{de:"der Begriff",en:"the concept"},
+    {de:"die Definition",en:"the definition"},{de:"das Argument",en:"the argument"},{de:"die Kritik",en:"the criticism"},
+    {de:"das Urteil",en:"the judgment"},{de:"die Perspektive",en:"the perspective"},{de:"das Prinzip",en:"the principle"},
+    {de:"die Struktur",en:"the structure"},{de:"die Funktion",en:"the function"},{de:"der Prozess",en:"the process"},
+    {de:"das System",en:"the system"},{de:"die Ordnung",en:"the order"},{de:"das Chaos",en:"the chaos"},
+    {de:"das Gleichgewicht",en:"the balance"},{de:"die Verbindung",en:"the connection"},{de:"die Beziehung",en:"the relationship"},
+    {de:"die Kommunikation",en:"the communication"},{de:"die Information",en:"the information"},{de:"die Technologie",en:"the technology"},
+    {de:"die Innovation",en:"the innovation"},{de:"die Entwicklung",en:"the development"},{de:"der Fortschritt",en:"the progress"},
+    {de:"die Zukunft",en:"the future"},{de:"die Vergangenheit",en:"the past"},{de:"die Gegenwart",en:"the present"}
+  ],
+  4:[
+    {de:"die Ambivalenz",en:"the ambivalence"},{de:"die Integrität",en:"the integrity"},{de:"das Paradox",en:"the paradox"},
+    {de:"die Kontroverse",en:"the controversy"},{de:"das Dilemma",en:"the dilemma"},{de:"die Spekulation",en:"the speculation"},
+    {de:"die Hypothese",en:"the hypothesis"},{de:"das Axiom",en:"the axiom"},{de:"die Prämisse",en:"the premise"},
+    {de:"das Paradigma",en:"the paradigm"},{de:"die Diskrepanz",en:"the discrepancy"},{de:"die Ambiguität",en:"the ambiguity"},
+    {de:"die Nuance",en:"the nuance"},{de:"das Phänomen",en:"the phenomenon"},{de:"die Manifestation",en:"the manifestation"},
+    {de:"die Transformation",en:"the transformation"},{de:"die Divergenz",en:"the divergence"},{de:"die Konvergenz",en:"the convergence"},
+    {de:"das Momentum",en:"the momentum"},{de:"die Dynamik",en:"the dynamics"},{de:"die Kohärenz",en:"the coherence"},
+    {de:"die Redundanz",en:"the redundancy"},{de:"die Effizienz",en:"the efficiency"},{de:"die Komplexität",en:"the complexity"},
+    {de:"die Nachhaltigkeit",en:"the sustainability"},{de:"die Transparenz",en:"the transparency"},{de:"die Legitimität",en:"the legitimacy"},
+    {de:"die Souveränität",en:"the sovereignty"},{de:"die Ideologie",en:"the ideology"},{de:"das Manifest",en:"the manifesto"},
+    {de:"die Rhetorik",en:"the rhetoric"},{de:"das Narrativ",en:"the narrative"},{de:"die Metapher",en:"the metaphor"},
+    {de:"die Allegorie",en:"the allegory"},{de:"die Ironie",en:"the irony"},{de:"die Satire",en:"the satire"},
+    {de:"die Polemik",en:"the polemic"},{de:"das Pathos",en:"the pathos"},{de:"die Empathie",en:"the empathy"},
+    {de:"die Sympathie",en:"the sympathy"},{de:"die Antipathie",en:"the antipathy"},{de:"die Authentizität",en:"the authenticity"},
+    {de:"das Klischee",en:"the cliché"},{de:"das Vorurteil",en:"the prejudice"},{de:"die Diskriminierung",en:"the discrimination"},
+    {de:"die Emanzipation",en:"the emancipation"},{de:"die Solidarität",en:"the solidarity"},{de:"die Hierarchie",en:"the hierarchy"},
+    {de:"die Bürokratie",en:"the bureaucracy"},{de:"das Monopol",en:"the monopoly"},{de:"die Korruption",en:"the corruption"},
+    {de:"die Manipulation",en:"the manipulation"},{de:"die Zensur",en:"the censorship"},{de:"die Wahrnehmung",en:"the perception"},
+    {de:"die Kognition",en:"the cognition"},{de:"das Unterbewusstsein",en:"the subconscious"},{de:"die Intuition",en:"the intuition"},
+    {de:"die Rationalität",en:"the rationality"},{de:"die Subjektivität",en:"the subjectivity"},{de:"die Objektivität",en:"the objectivity"},
+    {de:"die Kontinuität",en:"the continuity"},{de:"die Linearität",en:"the linearity"},{de:"das Spektrum",en:"the spectrum"},
+    {de:"die Variabilität",en:"the variability"},{de:"die Anomalie",en:"the anomaly"},{de:"die Ausnahme",en:"the exception"},
+    {de:"das Fundament",en:"the foundation"},{de:"die Infrastruktur",en:"the infrastructure"},{de:"die Architektur",en:"the architecture"},
+    {de:"das Konzept",en:"the concept"},{de:"der Entwurf",en:"the draft"},{de:"die Komposition",en:"the composition"},
+    {de:"die Synthese",en:"the synthesis"},{de:"die Analyse",en:"the analysis"},{de:"die Dekonstruktion",en:"the deconstruction"},
+    {de:"die Interpretation",en:"the interpretation"},{de:"die Überzeugung",en:"the conviction"},{de:"die Motivation",en:"the motivation"},
+    {de:"die Frustration",en:"the frustration"},{de:"die Ambition",en:"the ambition"},{de:"die Leidenschaft",en:"the passion"},
+    {de:"das Engagement",en:"the commitment"},{de:"die Disziplin",en:"the discipline"},{de:"die Resilienz",en:"the resilience"},
+    {de:"die Vulnerabilität",en:"the vulnerability"},{de:"das Vertrauen",en:"the trust"},{de:"die Loyalität",en:"the loyalty"},
+    {de:"die Reflexion",en:"the reflection"},{de:"die Kontemplation",en:"the contemplation"},{de:"die Abstraktion",en:"the abstraction"},
+    {de:"die Relativität",en:"the relativity"},{de:"das Absolute",en:"the absolute"},{de:"die Transzendenz",en:"the transcendence"},
+    {de:"die Immanenz",en:"the immanence"},{de:"das Wesen",en:"the essence"},{de:"die Existenz",en:"the existence"},
+    {de:"die Identität",en:"the identity"},{de:"die Differenz",en:"the difference"},{de:"die Ähnlichkeit",en:"the similarity"}
+  ]
+};
+
+// ===================================================================
+// PATH STRUCTURE — sections, each with lessons
+// ===================================================================
+const PATH_SECTIONS = [
+  {
+    id:1, title:"Grundlagen", subtitle:"The Basics", icon:"🌱", color:"#58cc02",
+    lessons:[
+      {id:1,title:"Greetings",icon:"👋",words:[0,10]},
+      {id:2,title:"Family",icon:"👨‍👩‍👧",words:[16,24]},
+      {id:3,title:"Food & Drink",icon:"🍎",words:[24,38]},
+      {id:4,title:"The Body",icon:"🫀",words:[44,58]},
+      {id:5,title:"Checkpoint",icon:"🏅",words:[0,58],type:"checkpoint"},
+    ]
+  },
+  {
+    id:2, title:"Alltag", subtitle:"Everyday Life", icon:"🏙️", color:"#1cb0f6",
+    lessons:[
+      {id:6,title:"Around Town",icon:"🏪",words:[0,15],level:2},
+      {id:7,title:"Travel",icon:"✈️",words:[6,18],level:2},
+      {id:8,title:"Communication",icon:"📱",words:[30,45],level:2},
+      {id:9,title:"Nature",icon:"🌲",words:[50,70],level:2},
+      {id:10,title:"Checkpoint",icon:"🏅",words:[0,70],level:2,type:"checkpoint"},
+    ]
+  },
+  {
+    id:3, title:"Fortgeschritten", subtitle:"Intermediate", icon:"⚗️", color:"#ff9600",
+    lessons:[
+      {id:11,title:"Society",icon:"🏛️",words:[0,20],level:3},
+      {id:12,title:"Business",icon:"💼",words:[12,30],level:3},
+      {id:13,title:"Science",icon:"🔬",words:[25,50],level:3},
+      {id:14,title:"Mind & Self",icon:"🧠",words:[57,80],level:3},
+      {id:15,title:"Checkpoint",icon:"🏅",words:[0,80],level:3,type:"checkpoint"},
+    ]
+  },
+  {
+    id:4, title:"Meister", subtitle:"Advanced", icon:"👑", color:"#ff4b91",
+    lessons:[
+      {id:16,title:"Philosophy",icon:"🦉",words:[0,25],level:4},
+      {id:17,title:"Society",icon:"🗳️",words:[40,65],level:4},
+      {id:18,title:"Abstract",icon:"🌀",words:[60,85],level:4},
+      {id:19,title:"The Mind",icon:"💭",words:[75,100],level:4},
+      {id:20,title:"Grand Master",icon:"💎",words:[0,100],level:4,type:"checkpoint"},
+    ]
+  }
+];
+
+// ===================================================================
+// STATE
+// ===================================================================
+let state = {
+  xp:0, streak:0, gems:0, lessonsCompleted:0, bestAccuracy:0,
+  lessonProgress:{}, // lessonId -> {stars, done}
+  currentLesson:null, gameMode:'flashcard'
+};
+
+// Load from storage
+try {
+  const saved = localStorage.getItem('dm_state');
+  if(saved) state = {...state,...JSON.parse(saved)};
+} catch(e){}
+
+function save() {
+  try { localStorage.setItem('dm_state', JSON.stringify(state)); } catch(e){}
+}
+
+// Game session state
+let gs = {};
+
+// ===================================================================
+// HELPERS
+// ===================================================================
+function shuffle(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]]}return b}
+
+function artClass(de){
+  if(de.startsWith('der ')) return 'art-der';
+  if(de.startsWith('die ')) return 'art-die';
+  return 'art-das';
+}
+
+function getWords(lesson){
+  const lvl = lesson.level||1;
+  const pool = WORDS[lvl];
+  const [s,e] = lesson.words;
+  return pool.slice(s, Math.min(e, pool.length));
+}
+
+function isUnlocked(lessonId){
+  if(lessonId===1) return true;
+  // Find previous lesson
+  let prev = null;
+  for(const sec of PATH_SECTIONS){
+    for(const l of sec.lessons){
+      if(l.id===lessonId) return prev ? !!(state.lessonProgress[prev.id]?.done) : true;
+      prev = l;
+    }
+  }
+  return false;
+}
+
+function isSectionUnlocked(secIdx){
+  if(secIdx===0) return true;
+  const prevSec = PATH_SECTIONS[secIdx-1];
+  const chk = prevSec.lessons[prevSec.lessons.length-1];
+  return !!(state.lessonProgress[chk.id]?.done);
+}
+
+function levelFromXp(xp){return Math.floor(xp/200)+1}
+function xpForNextLevel(xp){const l=levelFromXp(xp);return l*200}
+function xpProgress(xp){return ((xp%(200))/200)*100}
+
+// ===================================================================
+// UI UPDATE
+// ===================================================================
+function updateTopBar(){
+  document.getElementById('tb-streak').textContent=state.streak;
+  document.getElementById('tb-xp').textContent=state.xp;
+  document.getElementById('tb-gems').textContent=state.gems;
+  document.getElementById('tb-xpbar').style.width=xpProgress(state.xp)+'%';
+  document.getElementById('tb-level').textContent='Lvl '+levelFromXp(state.xp);
+}
+
+function showTab(tab){
+  document.querySelectorAll('[id^="nav-"]').forEach(b=>b.classList.remove('active'));
+  ['path-screen','leaderboard-screen','profile-screen'].forEach(id=>{
+    document.getElementById(id).classList.add('hidden');
+  });
+  if(tab==='path'){
+    document.getElementById('path-screen').classList.remove('hidden');
+    document.getElementById('nav-path').classList.add('active');
+  } else if(tab==='lb'){
+    document.getElementById('leaderboard-screen').classList.remove('hidden');
+    document.getElementById('nav-lb').classList.add('active');
+    renderLeaderboard();
+  } else if(tab==='profile'){
+    document.getElementById('profile-screen').classList.remove('hidden');
+    document.getElementById('nav-profile').classList.add('active');
+    renderProfile();
+  }
+}
+
+// ===================================================================
+// PATH RENDERING
+// ===================================================================
+const POSITIONS = ['pos-center','pos-right','pos-right','pos-center','pos-left','pos-left'];
+
+function renderPath(){
+  const container = document.getElementById('path-content');
+  container.innerHTML='';
+
+  PATH_SECTIONS.forEach((sec,si)=>{
+    const unlocked = isSectionUnlocked(si);
+
+    // Section header
+    const hdr = document.createElement('div');
+    hdr.className='path-section-header';
+    hdr.innerHTML=`<div class="section-banner" style="color:${sec.color};border-color:${sec.color}33">${sec.icon} ${sec.title}</div><div class="section-desc">${sec.subtitle}</div>`;
+    container.appendChild(hdr);
+
+    const pathDiv = document.createElement('div');
+    pathDiv.className='path-container';
+
+    sec.lessons.forEach((lesson,li)=>{
+      const isCheckpoint = lesson.type==='checkpoint';
+      const lessonUnlocked = unlocked && isUnlocked(lesson.id);
+      const done = !!(state.lessonProgress[lesson.id]?.done);
+      const stars = state.lessonProgress[lesson.id]?.stars||0;
+      const isActive = lessonUnlocked && !done;
+      const isNextActive = isActive && !sec.lessons.slice(0,li).some(l=>!state.lessonProgress[l.id]?.done);
+
+      const pos = POSITIONS[li % POSITIONS.length];
+      const row = document.createElement('div');
+      row.className=`path-row ${pos}`;
+      row.style.marginBottom = isNextActive ? '60px' : '20px';
+
+      let nodeState = 'locked';
+      if(done) nodeState='done';
+      else if(lessonUnlocked) nodeState='active';
+
+      const starsHtml = `<div class="node-stars">
+        <span class="node-star${stars>=1?' lit':''}">★</span>
+        <span class="node-star${stars>=2?' lit':''}">★</span>
+        <span class="node-star${stars>=3?' lit':''}">★</span>
+      </div>`;
+
+      const crownHtml = isCheckpoint && !done ? '<span class="node-crown">👑</span>' : '';
+
+      row.innerHTML=`<div class="node-wrap">
+        ${crownHtml}
+        <button class="lesson-node ${nodeState}${isCheckpoint?' checkpoint':''}"
+          onclick="${lessonUnlocked?`openLesson(${lesson.id})`:''}">
+          <span class="node-icon">${done?'✓':lessonUnlocked?lesson.icon:'🔒'}</span>
+          ${starsHtml}
+        </button>
+        <div class="node-label" style="color:${lessonUnlocked?'var(--text)':'var(--muted)'}">${lesson.title}</div>
+        ${isNextActive?`<button class="start-bubble" onclick="openLesson(${lesson.id})">START</button>`:''}
+      </div>`;
+
+      // Connector between nodes (not after last)
+      if(li < sec.lessons.length-1){
+        const conn = document.createElement('div');
+        conn.className='path-connector'+(done?' done':'');
+        row.appendChild(conn);
+      }
+
+      pathDiv.appendChild(row);
+    });
+
+    container.appendChild(pathDiv);
+
+    // Section divider (not after last)
+    if(si < PATH_SECTIONS.length-1){
+      const div = document.createElement('div');
+      div.className='section-divider';
+      const nextSec = PATH_SECTIONS[si+1];
+      const nextUnlocked = isSectionUnlocked(si+1);
+      div.innerHTML=`<div class="divider-line"></div><div class="divider-banner">${nextUnlocked?nextSec.icon:'🔒'} ${nextSec.title}</div>`;
+      container.appendChild(div);
+    }
+  });
+}
+
+// ===================================================================
+// LESSON MODAL
+// ===================================================================
+let modalLessonId = null;
+
+function openLesson(id){
+  if(!isUnlocked(id)) return;
+  modalLessonId = id;
+
+  let lesson = null;
+  for(const s of PATH_SECTIONS) for(const l of s.lessons) if(l.id===id){lesson=l;break}
+  if(!lesson) return;
+
+  const stars = state.lessonProgress[id]?.stars||0;
+  document.getElementById('modal-title').textContent=lesson.icon+' '+lesson.title;
+  document.getElementById('modal-sub').textContent=`${getWords(lesson).length} words · Level ${lesson.level||1}`;
+
+  const starsHtml = [1,2,3].map(i=>`<span class="big-star${stars>=i?' earned':''}"">⭐</span>`).join('');
+  document.getElementById('modal-stars').innerHTML=starsHtml;
+
+  document.getElementById('lesson-modal').classList.add('open');
+}
+
+function closeModal(e){
+  if(e.target===document.getElementById('lesson-modal')){
+    document.getElementById('lesson-modal').classList.remove('open');
+  }
+}
+
+function pickMode(m){
+  state.gameMode=m;
+  document.getElementById('tile-fc').classList.toggle('sel',m==='flashcard');
+  document.getElementById('tile-match').classList.toggle('sel',m==='match');
+}
+
+function launchLesson(){
+  document.getElementById('lesson-modal').classList.remove('open');
+  let lesson=null;
+  for(const s of PATH_SECTIONS) for(const l of s.lessons) if(l.id===modalLessonId){lesson=l;break}
+  if(!lesson) return;
+  startLesson(lesson, state.gameMode);
+}
+
+// ===================================================================
+// GAME ENGINE
+// ===================================================================
+function startLesson(lesson, mode){
+  state.currentLesson = lesson;
+  gs = {
+    mode, lesson,
+    words: shuffle(getWords(lesson)).slice(0,10),
+    idx:0, score:0, correct:0, wrong:0, streak:0, bestStreak:0,
+    answered:false,
+    // Match state
+    matchPairs:[], matchSelected:null, matchMatched:0,
+    matchTimeLeft:60, matchTimer:null, matchRound:0, matchTotalMatched:0
+  };
+
+  document.getElementById('game-screen').classList.add('active');
+  document.getElementById('app-shell').style.display='none';
+
+  updateGameProg();
+  if(mode==='flashcard') renderFC();
+  else renderMatch();
+}
+
+function quitGame(){
+  clearInterval(gs.matchTimer);
+  document.getElementById('game-screen').classList.remove('active');
+  document.getElementById('app-shell').style.display='flex';
+  hideFeedback();
+}
+
+function updateGameProg(){
+  const pct = gs.mode==='flashcard'
+    ? (gs.idx/gs.words.length)*100
+    : Math.min((gs.matchTotalMatched/(gs.words.length))*100,100);
+  document.getElementById('g-prog').style.width=pct+'%';
+  document.getElementById('g-xp').textContent=gs.score;
+}
+
+// ============ FLASHCARD FRENZY ============
+function renderFC(){
+  hideFeedback();
+  gs.answered=false;
+  const body = document.getElementById('game-body');
+  if(gs.idx >= gs.words.length){endLesson();return}
+  const w = gs.words[gs.idx];
+  const parts=w.de.split(' ');
+  const art=parts[0], noun=parts.slice(1).join(' ');
+  const artCls=artClass(w.de);
+
+  const distractors=shuffle(WORDS[gs.lesson.level||1].filter(x=>x.de!==w.de)).slice(0,3);
+  const options=shuffle([w,...distractors]);
+
+  body.innerHTML=`
+    <div class="q-label">Was bedeutet das auf Englisch?</div>
+    <div class="q-word-box">
+      <span class="q-article ${artCls}">${art}</span>
+      <span class="q-word">${noun}</span>
+      <span class="q-sub">tap the correct translation</span>
+    </div>
+    <div class="options-grid">
+      ${options.map(o=>`<button class="opt-btn" onclick="checkFC(this,'${o.de.replace(/'/g,"\\'")}','${w.de.replace(/'/g,"\\'")}','${w.en.replace(/'/g,"\\'")}')">${o.en}</button>`).join('')}
+    </div>`;
+  updateGameProg();
+}
+
+function checkFC(btn, chosen, correct, correctEn){
+  if(gs.answered) return;
+  gs.answered=true;
+  const isCorrect = chosen===correct;
+  document.querySelectorAll('.opt-btn').forEach(b=>b.disabled=true);
+  // highlight correct
+  document.querySelectorAll('.opt-btn').forEach(b=>{
+    const text = b.textContent.trim();
+    if(text===correctEn) b.classList.add('correct');
+  });
+  if(isCorrect){
+    btn.classList.add('correct');
+    gs.correct++; gs.streak++;
+    if(gs.streak>gs.bestStreak) gs.bestStreak=gs.streak;
+    const bonus = gs.streak>=3?20:10;
+    gs.score+=bonus;
+    showXpBurst(btn,'+'+bonus);
+    showFeedback(true, '🎉 Richtig!', '');
+  } else {
+    btn.classList.add('wrong');
+    gs.wrong++; gs.streak=0;
+    showFeedback(false,'❌ Falsch!','Richtig: '+correctEn);
+  }
+  updateGameProg();
+}
+
+// ============ MATCH MADNESS ============
+const MATCH_N=6;
+
+function renderMatch(){
+  const body=document.getElementById('game-body');
+  body.innerHTML=`
+    <div class="match-header">
+      <div class="match-timer" id="m-timer">1:00</div>
+      <div class="match-streak" id="m-streak">🔥 0 streak</div>
+    </div>
+    <div class="match-grid" id="match-grid"></div>`;
+  hideFeedback();
+  gs.matchTimeLeft=60; gs.matchSelected=null; gs.matchMatched=0; gs.matchRound=0;
+  clearInterval(gs.matchTimer);
+  gs.matchTimer=setInterval(()=>{
+    gs.matchTimeLeft--;
+    const el=document.getElementById('m-timer');
+    if(!el){clearInterval(gs.matchTimer);return}
+    const m=Math.floor(gs.matchTimeLeft/60),s=gs.matchTimeLeft%60;
+    el.textContent=m+':'+(s<10?'0':'')+s;
+    el.classList.toggle('urgent',gs.matchTimeLeft<=15);
+    if(gs.matchTimeLeft<=0){clearInterval(gs.matchTimer);endLesson();}
+  },1000);
+  loadMatchRound();
+}
+
+function loadMatchRound(){
+  const start=(gs.matchRound*MATCH_N)%gs.words.length;
+  let pairs=gs.words.slice(start,start+MATCH_N);
+  if(pairs.length<MATCH_N) pairs=[...pairs,...gs.words.slice(0,MATCH_N-pairs.length)];
+  gs.matchPairs=pairs; gs.matchRound++;
+  gs.matchSelected=null; gs.matchMatched=0;
+  const grid=document.getElementById('match-grid');
+  if(!grid) return;
+  const german=shuffle([...pairs]), english=shuffle([...pairs]);
+  grid.innerHTML='';
+  // interleave german left col, english right col
+  const maxN=Math.max(german.length,english.length);
+  for(let i=0;i<maxN;i++){
+    if(german[i]){
+      const t=document.createElement('div');
+      t.className='match-tile';
+      t.dataset.key=german[i].de; t.dataset.side='german';
+      const pts=german[i].de.split(' ');
+      t.innerHTML=`<span><span class="tile-art ${artClass(german[i].de)}">${pts[0]}</span>${pts.slice(1).join(' ')}</span>`;
+      t.onclick=()=>matchClick(t);
+      grid.appendChild(t);
+    }
+    if(english[i]){
+      const t=document.createElement('div');
+      t.className='match-tile';
+      t.dataset.key=english[i].de; t.dataset.side='english';
+      t.textContent=english[i].en.replace(/^the /,'');
+      t.onclick=()=>matchClick(t);
+      grid.appendChild(t);
+    }
+  }
+}
+
+function matchClick(tile){
+  if(tile.classList.contains('matched')||tile.classList.contains('m-wrong')) return;
+  if(!gs.matchSelected){
+    gs.matchSelected={tile,key:tile.dataset.key,side:tile.dataset.side};
+    tile.classList.add('m-selected'); return;
+  }
+  if(gs.matchSelected.tile===tile){
+    tile.classList.remove('m-selected'); gs.matchSelected=null; return;
+  }
+  if(gs.matchSelected.side===tile.dataset.side){
+    gs.matchSelected.tile.classList.remove('m-selected');
+    gs.matchSelected={tile,key:tile.dataset.key,side:tile.dataset.side};
+    tile.classList.add('m-selected'); return;
+  }
+  const match=gs.matchSelected.key===tile.dataset.key;
+  gs.matchSelected.tile.classList.remove('m-selected');
+  if(match){
+    gs.matchSelected.tile.classList.add('matched');
+    tile.classList.add('matched');
+    gs.streak++; gs.correct++;
+    if(gs.streak>gs.bestStreak) gs.bestStreak=gs.streak;
+    const bonus=gs.streak>=3?20:10;
+    gs.score+=bonus;
+    gs.matchMatched++; gs.matchTotalMatched++;
+    document.getElementById('m-streak').textContent='🔥 '+gs.streak+' streak';
+    showXpBurst(tile,'+'+bonus);
+    updateGameProg();
+    if(gs.matchMatched>=MATCH_N){
+      setTimeout(()=>{
+        if(gs.matchTotalMatched>=gs.words.length){clearInterval(gs.matchTimer);endLesson();}
+        else loadMatchRound();
+      },500);
+    }
+  } else {
+    const prev=gs.matchSelected.tile;
+    gs.streak=0; gs.wrong++;
+    document.getElementById('m-streak').textContent='🔥 0 streak';
+    prev.classList.add('m-wrong'); tile.classList.add('m-wrong');
+    setTimeout(()=>{prev.classList.remove('m-wrong');tile.classList.remove('m-wrong');},400);
+  }
+  gs.matchSelected=null;
+  document.getElementById('g-xp').textContent=gs.score;
+}
+
+// ============ FEEDBACK BAR ============
+function showFeedback(ok, result, answer){
+  const bar=document.getElementById('feedback-bar');
+  const btn=document.getElementById('fb-next');
+  bar.className='feedback-bar show '+(ok?'ok':'bad');
+  document.getElementById('fb-result').textContent=result;
+  document.getElementById('fb-answer').textContent=answer;
+  btn.textContent='WEITER';
+  btn.className='fb-next '+(ok?'ok-btn':'bad-btn');
+}
+function hideFeedback(){document.getElementById('feedback-bar').classList.remove('show')}
+function nextQuestion(){
+  gs.idx++;
+  if(gs.idx>=gs.words.length){hideFeedback();endLesson();}
+  else{hideFeedback();setTimeout(renderFC,100);}
+}
+
+// ============ XP BURST ============
+function showXpBurst(el, text){
+  const burst=document.createElement('div');
+  burst.className='xp-burst';
+  burst.textContent=text;
+  const rect=el.getBoundingClientRect();
+  burst.style.left=(rect.left+rect.width/2-20)+'px';
+  burst.style.top=(rect.top+window.scrollY-10)+'px';
+  document.body.appendChild(burst);
+  setTimeout(()=>burst.remove(),1000);
+}
+
+// ===================================================================
+// END LESSON / RESULTS
+// ===================================================================
+function endLesson(){
+  clearInterval(gs.matchTimer);
+  hideFeedback();
+  document.getElementById('game-screen').classList.remove('active');
+  document.getElementById('result-screen').classList.add('active');
+
+  const total=gs.correct+gs.wrong;
+  const acc=total>0?Math.round((gs.correct/total)*100):0;
+  const xpEarned=gs.score;
+
+  // Stars
+  let stars=0;
+  if(acc>=90) stars=3;
+  else if(acc>=70) stars=2;
+  else if(acc>=40) stars=1;
+
+  // Save progress
+  const lessonId=gs.lesson.id;
+  const prev=state.lessonProgress[lessonId]||{stars:0};
+  state.lessonProgress[lessonId]={done:true,stars:Math.max(prev.stars,stars)};
+  state.xp+=xpEarned;
+  state.gems+=stars;
+  state.streak=Math.max(state.streak,1); // simplified streak
+  state.lessonsCompleted++;
+  state.bestAccuracy=Math.max(state.bestAccuracy,acc);
+  save();
+  updateTopBar();
+  renderPath();
+
+  // Results UI
+  const emojis=['😢','🙁','😊','🎉','🏆'];
+  document.getElementById('res-mascot').textContent=acc>=90?'🏆':acc>=70?'🎉':acc>=40?'😊':'💪';
+  document.getElementById('res-title').textContent=acc>=90?'Ausgezeichnet!':acc>=70?'Sehr gut!':acc>=40?'Gut gemacht!':'Weiter üben!';
+  document.getElementById('res-sub').textContent=`${gs.correct} of ${total} correct — ${acc}% accuracy`;
+  document.getElementById('rs-xp').textContent='+'+xpEarned+' XP';
+  document.getElementById('rs-acc').textContent=acc+'%';
+  document.getElementById('rs-streak').textContent=gs.bestStreak;
+
+  // Stars with animation
+  const starEls=document.querySelectorAll('.big-star');
+  starEls.forEach((s,i)=>{
+    s.classList.remove('earned');
+    if(i<stars) setTimeout(()=>s.classList.add('earned'),(i+1)*250);
+  });
+}
+
+function continueFromResult(){
+  document.getElementById('result-screen').classList.remove('active');
+  document.getElementById('app-shell').style.display='flex';
+}
+
+function retryLesson(){
+  document.getElementById('result-screen').classList.remove('active');
+  startLesson(gs.lesson, gs.mode);
+}
+
+// ===================================================================
+// LEADERBOARD
+// ===================================================================
+const LB_PLAYERS=[
+  {name:"Anna K.",icon:"🦊",xp:2840},{name:"Max B.",icon:"🐺",xp:2200},
+  {name:"Sophie L.",icon:"🦋",xp:1950},{name:"Felix M.",icon:"🐸",xp:1700},
+  {name:"Lena W.",icon:"🦄",xp:1400},{name:"Tom S.",icon:"🐻",xp:1100},
+  {name:"Julia R.",icon:"🦁",xp:900},{name:"Karl H.",icon:"🐨",xp:650},
+  {name:"Mia P.",icon:"🐼",xp:400},{name:"Ben T.",icon:"🦅",xp:200}
+];
+
+function renderLeaderboard(){
+  const you={name:"Du",icon:"⭐",xp:state.xp,isYou:true};
+  let players=[...LB_PLAYERS,you].sort((a,b)=>b.xp-a.xp);
+  const list=document.getElementById('lb-list');
+  list.innerHTML=players.slice(0,10).map((p,i)=>{
+    const rankClass=i===0?'gold':i===1?'silver':i===2?'bronze':'';
+    return `<div class="lb-row${p.isYou?' you':''}">
+      <div class="lb-rank ${rankClass}">${i+1}</div>
+      <div class="lb-avatar">${p.icon}</div>
+      <div class="lb-name">${p.name}${p.isYou?' (Du)':''}</div>
+      <div class="lb-xp">⚡${p.xp}</div>
+    </div>`;
+  }).join('');
+}
+
+// ===================================================================
+// PROFILE
+// ===================================================================
+const ACHIEVEMENTS=[
+  {id:'first',icon:'🎯',name:'Erster Schritt',desc:'Complete your first lesson',check:()=>state.lessonsCompleted>=1},
+  {id:'streak3',icon:'🔥',name:'On Fire',desc:'Reach a 3-day streak',check:()=>state.streak>=3},
+  {id:'perfect',icon:'💯',name:'Perfektionist',desc:'Get 100% on a lesson',check:()=>state.bestAccuracy>=100},
+  {id:'xp500',icon:'⚡',name:'XP Sammler',desc:'Earn 500 total XP',check:()=>state.xp>=500},
+  {id:'xp2000',icon:'🌟',name:'XP Meister',desc:'Earn 2000 total XP',check:()=>state.xp>=2000},
+  {id:'10lessons',icon:'📚',name:'Fleißig',desc:'Complete 10 lessons',check:()=>state.lessonsCompleted>=10},
+  {id:'gems10',icon:'💎',name:'Schatzsammler',desc:'Collect 10 gems',check:()=>state.gems>=10},
+  {id:'all4',icon:'👑',name:'Meister',desc:'Complete all 4 checkpoints',check:()=>[5,10,15,20].every(id=>state.lessonProgress[id]?.done)},
+];
+
+function renderProfile(){
+  document.getElementById('p-streak').textContent=state.streak;
+  document.getElementById('p-xp').textContent=state.xp;
+  document.getElementById('p-lessons').textContent=state.lessonsCompleted;
+  document.getElementById('p-acc').textContent=state.bestAccuracy+'%';
+
+  const list=document.getElementById('achievements-list');
+  list.innerHTML=ACHIEVEMENTS.map(a=>{
+    const done=a.check();
+    return `<div class="ach-row">
+      <div class="ach-icon">${a.icon}</div>
+      <div class="ach-info">
+        <div class="ach-name">${a.name}</div>
+        <div class="ach-desc">${a.desc}</div>
+      </div>
+      <span class="ach-badge ${done?'ach-done':'ach-todo'}">${done?'✓ Done':'Locked'}</span>
+    </div>`;
+  }).join('');
+}
+
+// ===================================================================
+// INIT
+// ===================================================================
+updateTopBar();
+renderPath();
+</script>
+</body>
+</html>
